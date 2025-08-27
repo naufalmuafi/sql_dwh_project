@@ -1,0 +1,65 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyd
+*.pyo
+*.pyc
+.venv/
+venv/
+env/
+ENV/
+pip-wheel-metadata/
+.eggs/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.coverage*
+htmlcov/
+.mypy_cache/
+.pyright/
+.pyre/
+.pytype/
+.ruff_cache/
+.hypothesis/
+.ipynb_checkpoints/
+.jupyter/
+
+# Logs & caches
+*.log
+logs/
+.cache/
+.tmp/
+tmp/
+temp/
+
+# Local env/config
+.env
+.env.*
+*.env
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+
+# Editors/IDEs
+.vscode/
+!.vscode/extensions.json
+.idea/
+*.iml
