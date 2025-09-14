@@ -1,31 +1,47 @@
-/*
-===============================================================================
-Stored Procedure: Load Bronze Layer (Source -> Bronze)
-===============================================================================
-Script Purpose:
-    This stored procedure loads data into the 'bronze' schema from external CSV files. 
-    It performs the following actions:
-    - Truncates the bronze tables before loading data.
-    - Uses the `COPY` command to load data from csv Files to bronze tables.
+-- ===============================================================================
+-- Stored Procedure: bronze.load_bronze()
+-- ===============================================================================
+-- Script Purpose:
+--   This stored procedure loads raw source data (CSV files) into the 'bronze' schema.
+--   It performs the following actions:
+--     - Truncates existing data in the bronze tables.
+--     - Uses the COPY command to import fresh data from CSV files.
+--     - Logs row counts and load durations for each table.
+--
+-- Parameters:
+--   None. 
+--   This stored procedure does not accept any parameters or return any values.
+--
+-- Usage Example:
+--   CALL bronze.load_bronze();
+--
+-- Requirements:
+--   - Place all source CSV files into /tmp/pg_import/
+--   - Run the following commands before executing the procedure:
+--       mkdir -p /tmp/pg_import
+--       cp [your_path]/source_crm/*.csv /tmp/pg_import/
+--       cp [your_path]/source_erp/*.csv /tmp/pg_import/
+--       chmod 755 /tmp/pg_import
+--       chmod 644 /tmp/pg_import/*.csv
+--
+-- Error Handling:
+--   If any error occurs during loading, the procedure will output:
+--     - The error message (SQLERRM)
+--     - The SQL state (SQLSTATE)
+--   using RAISE NOTICE.
+-- ===============================================================================
 
-Parameters:
-    None. 
-	  This stored procedure does not accept any parameters or return any values.
 
-Usage Example:
-    CALL bronze.load_bronze();
-===============================================================================
-*/
 CREATE OR REPLACE PROCEDURE bronze.load_bronze()
 LANGUAGE plpgsql
 AS $$
 DECLARE
-    start_time  		TIMESTAMP;
-    end_time    		TIMESTAMP;
-    duration    		INTERVAL;
-	batch_start_time	TIMESTAMP;
-    batch_end_time		TIMESTAMP;
-    batch_duration		INTERVAL;
+    start_time          TIMESTAMP;
+    end_time            TIMESTAMP;
+    duration            INTERVAL;
+    batch_start_time    TIMESTAMP;
+    batch_end_time      TIMESTAMP;
+    batch_duration      INTERVAL;
 BEGIN
     RAISE NOTICE '=============================================';
     RAISE NOTICE 'Loading Bronze Layer';
@@ -36,7 +52,7 @@ BEGIN
     RAISE NOTICE '-------------------------------------';
 
     -- CRM Customers
-	batch_start_time := clock_timestamp();
+    batch_start_time := clock_timestamp();
     start_time := clock_timestamp();
     RAISE NOTICE '>> Truncating Table: bronze.crm_cust_info';
     TRUNCATE TABLE bronze.crm_cust_info;
@@ -51,7 +67,7 @@ BEGIN
         cst_gndr,
         cst_create_date
     )
-    FROM '/Users/muafi/Project/sql_dwh_project/datasets/source_crm/cust_info.csv'
+    FROM '/tmp/pg_import/cust_info.csv'
     WITH (FORMAT csv, DELIMITER ',', HEADER TRUE);
     end_time := clock_timestamp();
     duration := end_time - start_time;
@@ -74,7 +90,7 @@ BEGIN
         prd_start_dt,
         prd_end_dt
     )
-    FROM '/Users/muafi/Project/sql_dwh_project/datasets/source_crm/prd_info.csv'
+    FROM '/tmp/pg_import/prd_info.csv'
     WITH (FORMAT csv, DELIMITER ',', HEADER TRUE);
     end_time := clock_timestamp();
     duration := end_time - start_time;
@@ -99,7 +115,7 @@ BEGIN
         sls_quantity,
         sls_price
     )
-    FROM '/Users/muafi/Project/sql_dwh_project/datasets/source_crm/sales_details.csv'
+    FROM '/tmp/pg_import/sales_details.csv'
     WITH (FORMAT csv, DELIMITER ',', HEADER TRUE);
     end_time := clock_timestamp();
     duration := end_time - start_time;
@@ -122,7 +138,7 @@ BEGIN
         bdate,
         gen
     )
-    FROM '/Users/muafi/Project/sql_dwh_project/datasets/source_erp/cust_az12.csv'
+    FROM '/tmp/pg_import/cust_az12.csv'
     WITH (FORMAT csv, DELIMITER ',', HEADER TRUE);
     end_time := clock_timestamp();
     duration := end_time - start_time;
@@ -140,7 +156,7 @@ BEGIN
         cid,
         cntry
     )
-    FROM '/Users/muafi/Project/sql_dwh_project/datasets/source_erp/loc_a101.csv'
+    FROM '/tmp/pg_import/loc_a101.csv'
     WITH (FORMAT csv, DELIMITER ',', HEADER TRUE);
     end_time := clock_timestamp();
     duration := end_time - start_time;
@@ -160,20 +176,20 @@ BEGIN
         subcat,
         maintenance
     )
-    FROM '/Users/muafi/Project/sql_dwh_project/datasets/source_erp/px_cat_g1v2.csv'
+    FROM '/tmp/pg_import/px_cat_g1v2.csv'
     WITH (FORMAT csv, DELIMITER ',', HEADER TRUE);
     end_time := clock_timestamp();
-	batch_end_time := clock_timestamp();
+    batch_end_time := clock_timestamp();
     duration := end_time - start_time;
-	batch_duration := batch_end_time - batch_start_time;
+    batch_duration := batch_end_time - batch_start_time;
 
     RAISE NOTICE '   Rows inserted into erp_px_cat_g1v2: %', (SELECT COUNT(*) FROM bronze.erp_px_cat_g1v2);
     RAISE NOTICE '   Load Duration: % seconds', ROUND(EXTRACT(EPOCH FROM duration)::numeric, 3);
-	
-	RAISE NOTICE '=============================================';
-    RAISE NOTICE 'Loading Bronze Layer';
-	RAISE NOTICE '>> Bronze Layer Load Duration: % seconds', ROUND(EXTRACT(EPOCH FROM batch_duration)::numeric, 3);
-    RAISE NOTICE '=============================================';	
+
+    RAISE NOTICE '=============================================';
+    RAISE NOTICE 'Loading Bronze Layer Finished';
+    RAISE NOTICE '>> Bronze Layer Load Duration: % seconds', ROUND(EXTRACT(EPOCH FROM batch_duration)::numeric, 3);
+    RAISE NOTICE '=============================================';
 EXCEPTION
     WHEN others THEN
         RAISE NOTICE '=============================================';
