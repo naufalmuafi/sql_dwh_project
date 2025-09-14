@@ -1,13 +1,20 @@
-/*
-===============================================================================
-DDL Script: Create Bronze Tables
-===============================================================================
-Script Purpose:
-    This script creates tables in the 'bronze' schema, dropping existing tables 
-    if they already exist.
-	  Run this script to re-define the DDL structure of 'bronze' Tables
-===============================================================================
-*/
+-- =============================================================
+-- Bronze Layer: CRM & ERP Source Tables
+-- =============================================================
+-- Purpose:
+--   These tables represent the **raw ingestion layer (Bronze)** 
+--   for CRM and ERP source data. They are created in the "bronze" 
+--   schema and hold unprocessed, raw records as imported from CSV.
+--
+-- Usage:
+--   - Populated by the procedure: bronze.load_bronze()
+--   - Data is truncated and reloaded during each ETL run.
+--   - Do NOT apply transformations here (raw-only).
+--
+-- Notes:
+--   - Naming convention: source_system.table_name
+--   - Data types are chosen based on expected raw format; further 
+--     cleansing/typing occurs in Silver/Gold layers.
 
 CREATE TABLE IF NOT EXISTS bronze.crm_cust_info (
     cst_id INT,
@@ -59,7 +66,10 @@ CREATE TABLE IF NOT EXISTS bronze.erp_px_cat_g1v2 (
     maintenance VARCHAR(50)
 );
 
--- Verify metadata (Postgres equivalent of OBJECT_ID)
+-- =============================================================
+-- Metadata Verification
+-- =============================================================
+-- Quick check to ensure tables exist in the "bronze" schema.
 SELECT 
     n.nspname   AS schema_name,
     c.relname   AS table_name,
