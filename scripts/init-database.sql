@@ -13,17 +13,12 @@ WARNING:
     and ensure you have proper backups before running this script.
 */
 
--- Drop and recreate the 'DWH' database
-IF EXISTS (SELECT 1 FROM sys.databases WHERE name = 'DWH')
-BEGIN
-    ALTER DATABASE DWH SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
-    DROP DATABASE DWH;
-END;
+DROP DATABASE IF EXISTS dwh;
 
--- Create the Database
-CREATE DATABASE DWH;
+-- Step 2: Create fresh database
+CREATE DATABASE dwh;
 
--- Create Schemas
+-- Step 3: Create schemas inside the new DB
 CREATE SCHEMA IF NOT EXISTS bronze;
 CREATE SCHEMA IF NOT EXISTS silver;
 CREATE SCHEMA IF NOT EXISTS gold;
